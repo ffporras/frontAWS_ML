@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // 🔹 importante para generar la carpeta /out
   typescript: {
     ignoreBuildErrors: true,
   },
