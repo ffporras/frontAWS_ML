@@ -91,7 +91,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-muted-foreground">
-            <span>New to StreamFlix? </span>
+            <span>New to MovieMatch? </span>
             <a href="#" className="text-foreground hover:underline font-semibold">
               Sign up now
             </a>

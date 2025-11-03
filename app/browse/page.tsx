@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Play, Info } from "lucide-react"
+import { Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // Mock movie data with actual poster images
@@ -66,19 +66,16 @@ export default function BrowsePage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/90 to-transparent">
         <div className="flex items-center justify-between px-8 py-4">
           <div className="flex items-center gap-8">
-            <h1 className="text-3xl font-bold text-primary">StreamFlix</h1>
+            <h1 className="text-3xl font-bold text-primary">MovieMatch</h1>
             <nav className="flex gap-6 text-sm">
               <a href="#" className="text-foreground hover:text-muted-foreground transition-colors">
                 Home
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                TV Shows
+                Watch List
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Movies
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                My List
+                Watched It
               </a>
             </nav>
           </div>
@@ -110,10 +107,6 @@ export default function BrowsePage() {
             the universe from total destruction.
           </p>
           <div className="flex gap-4">
-            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 gap-2">
-              <Play className="h-5 w-5" fill="currentColor" />
-              Play
-            </Button>
             <Button size="lg" variant="secondary" className="gap-2 bg-muted/50 hover:bg-muted/70 text-foreground">
               <Info className="h-5 w-5" />
               More Info
@@ -159,11 +152,7 @@ function MovieRow({
             >
               <div className="relative rounded-md overflow-hidden bg-muted aspect-[2/3]">
                 <img src={movie.image || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
-                {hoveredId === movie.id && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity">
-                    <Play className="h-12 w-12 text-foreground" fill="currentColor" />
-                  </div>
-                )}
+                
               </div>
               <p className="mt-2 text-sm text-foreground font-medium truncate">{movie.title}</p>
             </div>

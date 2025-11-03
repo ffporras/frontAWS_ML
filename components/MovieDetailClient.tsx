@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Play, Plus, ThumbsUp, Star } from "lucide-react"
+import { ArrowLeft, Check, Plus, ThumbsUp, ThumbsDown, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const movieDatabase: Record<
@@ -339,17 +339,21 @@ export default function MovieDetailClient({ movieId }: { movieId: number }) {
 
           <div className="md:col-span-2 space-y-8">
             <div className="flex gap-4">
-              <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 gap-2">
-                <Play className="h-5 w-5" fill="currentColor" />
-                Play
-              </Button>
               <Button size="lg" variant="outline" className="gap-2 bg-transparent">
                 <Plus className="h-5 w-5" />
-                My List
+                Watch List
+              </Button>
+              <Button size="lg" variant="outline" className="gap-2 bg-transparent">
+                <Check className="h-5 w-5" />
+                Watched It
               </Button>
               <Button size="lg" variant="outline" className="gap-2 bg-transparent">
                 <ThumbsUp className="h-5 w-5" />
                 Like
+              </Button>
+              <Button size="lg" variant="outline" className="gap-2 bg-transparent">
+                <ThumbsDown className="h-5 w-5" />
+                Don't Like
               </Button>
             </div>
 
