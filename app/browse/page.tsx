@@ -2,53 +2,39 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Info } from "lucide-react"
+import { Play, Info, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-// Mock movie data with actual poster images
-const movies = {
-  forYou: [
-    { id: 1, title: "Stellar Odyssey", image: "/sci-fi-space-movie-poster.png", rating: 0 },
-    { id: 2, title: "The Last Kingdom", image: "/medieval-epic-movie-poster.jpg", rating: 0 },
-    { id: 3, title: "Neon Dreams", image: "/cyberpunk-neon-city-movie-poster.jpg", rating: 0 },
-    { id: 4, title: "Ocean's Mystery", image: "/ocean-adventure-movie-poster.jpg", rating: 0 },
-    { id: 5, title: "Desert Storm", image: "/desert-action-movie-poster.jpg", rating: 0 },
-    { id: 6, title: "Winter's Tale", image: "/winter-fantasy-movie-poster.jpg", rating: 0 },
-  ],
-  trending: [
-    { id: 7, title: "Quantum Leap", image: "/quantum-physics-thriller-poster.jpg", rating: 0 },
-    { id: 8, title: "Shadow Hunter", image: "/dark-hunter-action-poster.jpg", rating: 0 },
-    { id: 9, title: "City Lights", image: "/urban-drama-movie-poster.jpg", rating: 0 },
-    { id: 10, title: "Wild Hearts", image: "/romance-adventure-poster.jpg", rating: 0 },
-    { id: 11, title: "The Heist", image: "/heist-thriller-movie-poster.jpg", rating: 0 },
-    { id: 12, title: "Mystic Forest", image: "/mystical-forest-fantasy-poster.jpg", rating: 0 },
-  ],
-  action: [
-    { id: 13, title: "Thunder Strike", image: "/action-explosion-movie-poster.jpg", rating: 0 },
-    { id: 14, title: "Velocity", image: "/fast-cars-racing-poster.jpg", rating: 0 },
-    { id: 15, title: "Iron Fist", image: "/martial-arts-action-poster.jpg", rating: 0 },
-    { id: 16, title: "Rogue Agent", image: "/spy-action-thriller-poster.jpg", rating: 0 },
-    { id: 17, title: "Warzone", image: "/military-war-movie-poster.jpg", rating: 0 },
-    { id: 18, title: "Apex Predator", image: "/survival-action-poster.jpg", rating: 0 },
-  ],
-  sciFi: [
-    { id: 19, title: "Galactic Empire", image: "/space-empire-sci-fi-poster.jpg", rating: 0 },
-    { id: 20, title: "AI Uprising", image: "/sci-fi-space-movie-poster.png", rating: 0 },
-    { id: 21, title: "Time Paradox", image: "/quantum-physics-thriller-poster.jpg", rating: 0 },
-    { id: 22, title: "Mars Colony", image: "/sci-fi-space-movie-poster.png", rating: 0 },
-    { id: 23, title: "Cyber Realm", image: "/cyberpunk-neon-city-movie-poster.jpg", rating: 0 },
-    { id: 24, title: "Alien Contact", image: "/space-empire-sci-fi-poster.jpg", rating: 0 },
-  ],
-}
+import { getMovies, type Movie } from "@/lib/api"
 
 export default function BrowsePage() {
   const router = useRouter()
+  const [movies, setMovies] = useState<Movie[]>([])
+  const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; role: string } | null>(null)
 
   useEffect(() => {
     const isAuth = localStorage.getItem("isAuthenticated")
-    if (!isAuth) {
+    const userData = localStorage.getItem("currentUser")
+
+    if (!isAuth || !userData) {
       router.push("/")
+      return
     }
+
+    setCurrentUser(JSON.parse(userData))
+
+    const fetchMovies = async () => {
+      try {
+        const data = await getMovies(50, 0)
+        setMovies(data)
+      } catch (error) {
+        console.error("Failed to fetch movies:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMovies()
   }, [router])
 
   const handleMovieClick = (movieId: number) => {
@@ -57,7 +43,29 @@ export default function BrowsePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated")
+    localStorage.removeItem("currentUser")
     router.push("/")
+  }
+
+  const categorizeMovies = () => {
+    const forYou = movies.slice(0, 6)
+    const trending = movies.slice(6, 12)
+    const action = movies.filter((m) => m.genres.some((g) => g.toLowerCase().includes("action"))).slice(0, 6)
+    const sciFi = movies
+      .filter((m) => m.genres.some((g) => g.toLowerCase().includes("sci-fi") || g.toLowerCase().includes("science")))
+      .slice(0, 6)
+
+    return { forYou, trending, action, sciFi }
+  }
+
+  const categories = categorizeMovies()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-foreground text-xl">Loading movies...</div>
+      </div>
+    )
   }
 
   return (
@@ -68,20 +76,32 @@ export default function BrowsePage() {
           <div className="flex items-center gap-8">
             <h1 className="text-3xl font-bold text-primary">MovieMatch</h1>
             <nav className="flex gap-6 text-sm">
-              <a href="#" className="text-foreground hover:text-muted-foreground transition-colors">
+              <a href="/browse" className="text-foreground hover:text-muted-foreground transition-colors">
                 Home
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Watch List
+              <a href="/watched" className="text-muted-foreground hover:text-foreground transition-colors">
+                Watched It
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Watched It
+                My List
               </a>
             </nav>
           </div>
-          <Button onClick={handleLogout} variant="ghost" className="text-foreground hover:text-muted-foreground">
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-4">
+            {currentUser?.role === "superadmin" && (
+              <Button
+                onClick={() => router.push("/admin")}
+                variant="ghost"
+                className="text-foreground hover:text-muted-foreground gap-2"
+              >
+                <Settings className="h-5 w-5" />
+                Admin
+              </Button>
+            )}
+            <Button onClick={handleLogout} variant="ghost" className="text-foreground hover:text-muted-foreground">
+              Sign Out
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -103,10 +123,13 @@ export default function BrowsePage() {
         <div className="relative z-10 px-8 max-w-2xl">
           <h2 className="text-6xl font-bold mb-4 text-foreground">Featured Title</h2>
           <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-            An epic journey through time and space. When humanity faces its greatest threat, one hero must rise to save
-            the universe from total destruction.
+            Discover amazing movies and rate your favorites. Explore our vast collection of films across all genres.
           </p>
           <div className="flex gap-4">
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 gap-2">
+              <Play className="h-5 w-5" fill="currentColor" />
+              Play
+            </Button>
             <Button size="lg" variant="secondary" className="gap-2 bg-muted/50 hover:bg-muted/70 text-foreground">
               <Info className="h-5 w-5" />
               More Info
@@ -117,10 +140,10 @@ export default function BrowsePage() {
 
       {/* Movie Categories */}
       <section className="relative z-20 -mt-32 px-8 pb-16 space-y-12">
-        <MovieRow title="For You" movies={movies.forYou} onMovieClick={handleMovieClick} />
-        <MovieRow title="Trending Now" movies={movies.trending} onMovieClick={handleMovieClick} />
-        <MovieRow title="Action & Adventure" movies={movies.action} onMovieClick={handleMovieClick} />
-        <MovieRow title="Sci-Fi & Fantasy" movies={movies.sciFi} onMovieClick={handleMovieClick} />
+        <MovieRow title="For You" movies={categories.forYou} onMovieClick={handleMovieClick} />
+        <MovieRow title="Trending Now" movies={categories.trending} onMovieClick={handleMovieClick} />
+        <MovieRow title="Action & Adventure" movies={categories.action} onMovieClick={handleMovieClick} />
+        <MovieRow title="Sci-Fi & Fantasy" movies={categories.sciFi} onMovieClick={handleMovieClick} />
       </section>
     </div>
   )
@@ -132,10 +155,12 @@ function MovieRow({
   onMovieClick,
 }: {
   title: string
-  movies: Array<{ id: number; title: string; image: string; rating: number }>
+  movies: Movie[]
   onMovieClick: (id: number) => void
 }) {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
+
+  if (movies.length === 0) return null
 
   return (
     <div className="space-y-4">
@@ -151,10 +176,19 @@ function MovieRow({
               onMouseLeave={() => setHoveredId(null)}
             >
               <div className="relative rounded-md overflow-hidden bg-muted aspect-[2/3]">
-                <img src={movie.image || "/placeholder.svg"} alt={movie.title} className="w-full h-full object-cover" />
-                
+                <img
+                  src={`/.jpg?height=450&width=300&query=${encodeURIComponent(movie.title + " movie poster")}`}
+                  alt={movie.title}
+                  className="w-full h-full object-cover"
+                />
+                {hoveredId === movie.id && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity">
+                    <Play className="h-12 w-12 text-foreground" fill="currentColor" />
+                  </div>
+                )}
               </div>
               <p className="mt-2 text-sm text-foreground font-medium truncate">{movie.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{movie.genres.join(", ")}</p>
             </div>
           ))}
         </div>

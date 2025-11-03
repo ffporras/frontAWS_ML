@@ -7,18 +7,35 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { loginUser } from "@/lib/api"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simple client-side auth for demo purposes
-    if (username && password) {
-      localStorage.setItem("isAuthenticated", "true")
-      router.push("/browse")
+    setError("")
+    setLoading(true)
+
+    try {
+      const user = await loginUser(username, password)
+
+      if (user) {
+        localStorage.setItem("isAuthenticated", "true")
+        localStorage.setItem("currentUser", JSON.stringify(user))
+        router.push("/browse")
+      } else {
+        setError("Invalid username or password")
+      }
+    } catch (err) {
+      setError("Failed to login. Please try again.")
+      console.error("Login error:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -42,6 +59,8 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold mb-8 text-foreground">Sign In</h1>
 
           <form onSubmit={handleLogin} className="space-y-6">
+            {error && <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded">{error}</div>}
+
             <div className="space-y-2">
               <Label htmlFor="username" className="text-foreground">
                 Username
@@ -54,6 +73,7 @@ export default function LoginPage() {
                 className="bg-muted border-border text-foreground h-12"
                 placeholder="Enter your username"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -69,14 +89,16 @@ export default function LoginPage() {
                 className="bg-muted border-border text-foreground h-12"
                 placeholder="Enter your password"
                 required
+                disabled={loading}
               />
             </div>
 
             <Button
               type="submit"
               className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg"
+              disabled={loading}
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
 
             <div className="flex items-center justify-between text-sm">
