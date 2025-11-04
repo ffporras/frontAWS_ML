@@ -414,3 +414,4 @@ export default function MovieDetailClient({ movieId }: { movieId: number }) {
 }
 
 
+

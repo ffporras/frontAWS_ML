@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Play, Info, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMovies, type Movie } from "@/lib/api"
+import { signOut } from "aws-amplify/auth"
 
 export default function BrowsePage() {
   const router = useRouter()
@@ -41,9 +42,23 @@ export default function BrowsePage() {
     router.push(`/movie/${movieId}`)
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut()
+    } catch {}
+
     localStorage.removeItem("isAuthenticated")
     localStorage.removeItem("currentUser")
+
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+    const clientId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID
+    const logoutUri = process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "/"
+
+    if (domain && clientId) {
+      window.location.href = `https://${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`
+      return
+    }
+
     router.push("/")
   }
 
