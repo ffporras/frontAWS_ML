@@ -27,6 +27,26 @@ export interface Rating {
   timestamp: number
 }
 
+function normalizeMovie(raw: any): Movie {
+  const rawGenres = raw?.genres
+  const genresArray = Array.isArray(rawGenres)
+    ? rawGenres
+    : typeof rawGenres === "string"
+      ? rawGenres.split(",")
+      : []
+
+  return {
+    id: typeof raw?.id === "number" ? raw.id : Number(raw?.id),
+    title: String(raw?.title ?? ""),
+    genres: genresArray
+      .map((g: any) => String(g))
+      .map((g: string) => g.trim())
+      .filter((g: string) => g.length > 0),
+    createdAt: raw?.createdAt,
+    updatedAt: raw?.updatedAt,
+  }
+}
+
 // Movies API
 export async function getMovies(limit = 20, offset = 0, query = ""): Promise<Movie[]> {
   const params = new URLSearchParams({
@@ -34,19 +54,24 @@ export async function getMovies(limit = 20, offset = 0, query = ""): Promise<Mov
     offset: offset.toString(),
     ...(query && { q: query }),
   })
-  const response = await fetch(`${MOVIES_API}/movies?${params}`)
+  const response = await fetch(`/api/movies?${params}`)
   if (!response.ok) throw new Error("Failed to fetch movies")
-  return response.json()
+  const data = await response.json().catch(() => null)
+  if (Array.isArray(data)) return data.map(normalizeMovie)
+  if (data && Array.isArray(data.movies)) return data.movies.map(normalizeMovie)
+  if (data && Array.isArray(data.items)) return data.items.map(normalizeMovie)
+  return []
 }
 
 export async function getMovie(id: number): Promise<Movie> {
-  const response = await fetch(`${MOVIES_API}/movies/${id}`)
+  const response = await fetch(`/api/movies/${id}`)
   if (!response.ok) throw new Error("Failed to fetch movie")
-  return response.json()
+  const data = await response.json()
+  return normalizeMovie(data)
 }
 
 export async function createMovie(title: string, genres: string[]): Promise<Movie> {
-  const response = await fetch(`${MOVIES_API}/movies`, {
+  const response = await fetch(`/api/movies`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, genres }),
@@ -56,7 +81,7 @@ export async function createMovie(title: string, genres: string[]): Promise<Movi
 }
 
 export async function updateMovie(id: number, title?: string, genres?: string[]): Promise<Movie> {
-  const response = await fetch(`${MOVIES_API}/movies/${id}`, {
+  const response = await fetch(`/api/movies/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...(title && { title }), ...(genres && { genres }) }),
@@ -66,7 +91,7 @@ export async function updateMovie(id: number, title?: string, genres?: string[])
 }
 
 export async function deleteMovie(id: number): Promise<void> {
-  const response = await fetch(`${MOVIES_API}/movies/${id}`, {
+  const response = await fetch(`/api/movies/${id}`, {
     method: "DELETE",
   })
   if (!response.ok) throw new Error("Failed to delete movie")

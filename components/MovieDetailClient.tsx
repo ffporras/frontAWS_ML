@@ -334,7 +334,7 @@ export default function MovieDetailClient({ movieId }: { movieId: number }) {
       <section className="px-8 py-12 max-w-6xl mx-auto">
         <div className="grid md:grid-cols-3 gap-12">
           <div className="md:col-span-1">
-            <img src={movie.image || "/placeholder.svg"} alt={movie.title} className="w-full rounded-lg shadow-2xl" />
+            <img src="/peli.jpg" alt={movie.title} className="w-full rounded-lg shadow-2xl" />
           </div>
 
           <div className="md:col-span-2 space-y-8">

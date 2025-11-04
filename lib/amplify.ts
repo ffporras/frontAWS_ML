@@ -10,14 +10,15 @@ import { Amplify } from "aws-amplify"
   }
 
   const origin = typeof window !== "undefined" ? window.location.origin : undefined
+  // Prefer current origin first to avoid https://localhost issues in dev
   const redirectSignIn = [
-    process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNIN as string,
     origin ? `${origin}/callback` : undefined,
+    process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNIN as string,
   ].filter(Boolean) as string[]
 
   const redirectSignOut = [
-    process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNOUT as string,
     origin ? `${origin}/` : undefined,
+    process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNOUT as string,
   ].filter(Boolean) as string[]
 
   Amplify.configure({

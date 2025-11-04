@@ -11,7 +11,7 @@ export default function BrowsePage() {
   const router = useRouter()
   const [movies, setMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; role: string } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ id: number; username: string; role: string; email?: string } | null>(null)
 
   useEffect(() => {
     const isAuth = localStorage.getItem("isAuthenticated")
@@ -50,9 +50,9 @@ export default function BrowsePage() {
     localStorage.removeItem("isAuthenticated")
     localStorage.removeItem("currentUser")
 
-    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+    const domain = (process.env.NEXT_PUBLIC_COGNITO_DOMAIN || '').replace(/^https?:\/\//i, '')
     const clientId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_CLIENT_ID
-    const logoutUri = process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "/"
+    const logoutUri = (typeof window !== 'undefined' ? `${window.location.origin}/` : undefined) || process.env.NEXT_PUBLIC_COGNITO_REDIRECT_SIGNOUT || "/"
 
     if (domain && clientId) {
       window.location.href = `https://${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`
@@ -112,6 +112,11 @@ export default function BrowsePage() {
                 <Settings className="h-5 w-5" />
                 Admin
               </Button>
+            )}
+            {currentUser && (
+              <span className="text-sm text-muted-foreground truncate max-w-[220px]" title={currentUser.email || currentUser.username}>
+                {currentUser.email || currentUser.username}
+              </span>
             )}
             <Button onClick={handleLogout} variant="ghost" className="text-foreground hover:text-muted-foreground">
               Sign Out
@@ -192,7 +197,7 @@ function MovieRow({
             >
               <div className="relative rounded-md overflow-hidden bg-muted aspect-[2/3]">
                 <img
-                  src={`/.jpg?height=450&width=300&query=${encodeURIComponent(movie.title + " movie poster")}`}
+                  src="/peli.jpg"
                   alt={movie.title}
                   className="w-full h-full object-cover"
                 />

@@ -140,7 +140,7 @@ export default function MovieDetailPage() {
           {/* Left Column - Poster */}
           <div className="md:col-span-1">
             <img
-              src={`/.jpg?key=45j4p&height=600&width=400&query=${encodeURIComponent(movie.title + " movie poster")}`}
+              src="/peli.jpg"
               alt={movie.title}
               className="w-full rounded-lg shadow-2xl"
             />

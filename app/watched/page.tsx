@@ -165,7 +165,7 @@ function MovieCard({
     >
       <div className="relative rounded-md overflow-hidden bg-muted aspect-[2/3]">
         <img
-          src={`/.jpg?height=450&width=300&query=${encodeURIComponent(movie.title + " movie poster")}`}
+          src="/peli.jpg"
           alt={movie.title}
           className="w-full h-full object-cover"
         />
