@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Duplicate constant to avoid importing client helpers into the route bundle
 const MOVIES_API = "https://cq6rnraumra73ggndaubv4mslu0uzasy.lambda-url.us-east-1.on.aws"
 
 export async function GET(request: NextRequest) {
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: data || "Upstream error" }, { status: resp.status })
     }
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Proxy fetch failed" }, { status: 502 })
   }
 }
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: data || "Upstream error" }, { status: resp.status })
     }
     return NextResponse.json(data)
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Proxy fetch failed" }, { status: 502 })
   }
 }
