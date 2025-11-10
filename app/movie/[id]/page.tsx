@@ -9,7 +9,8 @@ import { getMovie, getRating, createRating, updateRating, type Movie } from "@/l
 export default function MovieDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const movieId = Number(params.id)
+  const movieIdParam = Array.isArray(params.id) ? params.id[0] : params.id
+  const movieId = Number(movieIdParam)
 
   const [movie, setMovie] = useState<Movie | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,14 +30,24 @@ export default function MovieDetailPage() {
     }
 
     const user = JSON.parse(userData)
-    setCurrentUser(user)
+    const toNumericId = (s: string) => {
+      let hash = 0
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 31 + s.charCodeAt(i)) >>> 0
+      }
+      return hash || 1
+    }
+    const numericId =
+      typeof user.id === "number" ? user.id : toNumericId(String(user.id || user.email || user.username || "user"))
+    const normalizedUser = { ...user, id: numericId }
+    setCurrentUser(normalizedUser)
 
     const fetchData = async () => {
       try {
         const movieData = await getMovie(movieId)
         setMovie(movieData)
 
-        const ratingData = await getRating(user.id, movieId)
+        const ratingData = await getRating(normalizedUser.id, movieId)
         if (ratingData) {
           setRating(ratingData.rating)
           setHasRated(true)

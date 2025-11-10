@@ -22,8 +22,20 @@ export default function CallbackPage() {
         const groups: string[] = (idPayload?.["cognito:groups"] as string[]) || []
         const role = groups.includes("superadmin") ? "superadmin" : "user"
 
+        const sourceId: string =
+          (idPayload?.["sub"] as string) || (cognitoUser?.userId as string) || email || username || "user"
+
+        // Deterministic numeric ID derived from a stable string identifier
+        const toNumericId = (s: string) => {
+          let hash = 0
+          for (let i = 0; i < s.length; i++) {
+            hash = (hash * 31 + s.charCodeAt(i)) >>> 0
+          }
+          return hash || 1
+        }
+
         const appUser = {
-          id: (idPayload?.["sub"] as string) || (cognitoUser?.userId as string) || "",
+          id: toNumericId(sourceId),
           username,
           email,
           role,

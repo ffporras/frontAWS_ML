@@ -27,12 +27,22 @@ export default function WatchedPage() {
     }
 
     const user = JSON.parse(userData)
-    setCurrentUser(user)
+    const toNumericId = (s: string) => {
+      let hash = 0
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 31 + s.charCodeAt(i)) >>> 0
+      }
+      return hash || 1
+    }
+    const numericId =
+      typeof user.id === "number" ? user.id : toNumericId(String(user.id || user.email || user.username || "user"))
+    const normalizedUser = { ...user, id: numericId }
+    setCurrentUser(normalizedUser)
 
     // Fetch user's ratings and corresponding movies
     const fetchWatchedMovies = async () => {
       try {
-        const ratings = await getRatings(user.id)
+        const ratings = await getRatings(normalizedUser.id)
 
         // Fetch movie details for each rating
         const moviesWithRatings = await Promise.all(

@@ -35,8 +35,11 @@ function normalizeMovie(raw: any): Movie {
       ? rawGenres.split(",")
       : []
 
+  const rawId = raw?.id ?? raw?.movieId
+  const parsedId = typeof rawId === "number" ? rawId : Number(rawId)
+
   return {
-    id: typeof raw?.id === "number" ? raw.id : Number(raw?.id),
+    id: parsedId,
     title: String(raw?.title ?? ""),
     genres: genresArray
       .map((g: any) => String(g))
